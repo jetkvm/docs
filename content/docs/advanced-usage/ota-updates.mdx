@@ -53,6 +53,26 @@ chmod +x $JETKVM_UPDATE_TMPFILE && mv $JETKVM_UPDATE_TMPFILE /userdata/jetkvm/je
 
 **Note:** Make sure to use the correct firmware file specifically designed for the DC Extension, as using the wrong firmware could damage the device.
 
+---
+
+## ATX Extension
+
+**The ATX Extension also very rarely needs firmware updates**, which requires a manual flashing process. Unlike the main JetKVM device, the ATX Extension cannot be updated over-the-air and must be flashed directly. New firmware updates can be found [here](https://github.com/jetkvm/atx-extension-firmware/releases).
+
+**To update the ATX Extension firmware:**
+
+1. **Disconnect all cables** - Remove any cables from the ATX Extension.
+
+2. **Enter flash mode** - Insert a pin into the small flash-mode hole on the board and hold the button inside while connecting the ATX Extension to your computer over USB.
+
+3. **Device recognition** - The ATX Extension will appear as a removable disk drive on your computer.
+
+4. **Flash the firmware** - Drag and drop the ATX Extension firmware file (a `.uf2` file) onto the disk drive. The flashing process will begin automatically.
+
+5. **Complete the update** - The USB drive will automatically eject when the flashing process is complete, indicating that the ATX Extension has been successfully updated and rebooted with the new firmware.
+
+**Note:** Make sure to use the correct firmware file specifically designed for the ATX Extension, as using the wrong firmware could damage the device.
+
 ## Release Process
 
 JetKVM employs a rolling release system for major updates to ensure stability across all devices. **When a new version is released, it is initially rolled out to only 10% of users**. The rollout gradually expands until 100% of devices are updated. This approach helps mitigate risks by preventing widespread issues in case a release encounters unforeseen problems.
