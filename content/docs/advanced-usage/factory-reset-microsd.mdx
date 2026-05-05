@@ -1,0 +1,44 @@
+---
+title: "microSD recovery"
+description: "Recover a JetKVM with a microSD card slot by writing a fresh recovery image to the card with Balena Etcher."
+order: 2
+parent: factory-reset
+---
+
+Use this procedure for JetKVM models that boot from a removable microSD card (sometimes labelled TF). Recovery means writing a fresh recovery image to a card and booting the device from it.
+
+If your device has no card slot, follow the [DFU recovery](/docs/advanced-usage/factory-reset-dfu) guide instead.
+
+## What you need
+
+- A microSD card, 8 GB or larger (UHS-I / Class 10 or better recommended).
+- A card reader connected to your computer.
+- [Balena Etcher](https://etcher.balena.io/) installed. We recommend it.
+
+## 1. Download the recovery image
+
+Download `update_sd.img.zip` from:
+
+```
+https://api.jetkvm.com/releases/system_recovery/latest?sku=jetkvm-v2-sdmmc
+```
+
+Etcher reads the `.zip` directly, so there is no need to unzip it.
+
+## 2. Write the image with Balena Etcher
+
+1. Insert the microSD card into your card reader.
+2. Open Balena Etcher.
+3. Click **Flash from file** and select `update_sd.img.zip`.
+4. Click **Select target** and pick your microSD card. Double-check the size and label match the card you just inserted - flashing the wrong drive will erase it.
+5. Click **Flash** and wait for it to finish.
+
+> Etcher may show a `Missing partition table` warning before flashing. This is expected for the JetKVM recovery image; click through to continue.
+
+## 3. Boot from the microSD card
+
+1. Disconnect power from the device.
+2. Insert the prepared microSD card into the slot on the right side of the device.
+3. Reconnect power.
+
+The device boots from the new image. Recovery is complete when the front display shows the device's IP address as normal.

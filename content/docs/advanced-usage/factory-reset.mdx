@@ -1,127 +1,39 @@
 ---
 title: "Factory Reset"
-description: "Restore your JetKVM to a clean firmware install. Use DFU mode for the original JetKVM, or write a recovery image to a microSD card for JetKVM SDMMC."
+description: "Restore your JetKVM to a clean firmware install. Pick the recovery method that matches your hardware - DFU mode for the original JetKVM, or a microSD card for models with a card slot."
 order: 1
 ---
 
 A factory reset reflashes JetKVM with the latest official firmware. Use it when you can't reach the device over SSH, want a clean slate, or are recovering from a failed boot.
 
-The recovery procedure depends on which model you own:
+## Pick your recovery method
 
-| Model          | Recovery method               | Image                |
-| -------------- | ----------------------------- | -------------------- |
-| JetKVM         | DFU mode + `upgrade_tool`     | `firmware.img`       |
-| JetKVM SDMMC   | Flash a microSD card          | `update_sd.img.zip`  |
+There are two JetKVM hardware variants. Look at the right side of your device:
 
-Both images are served from the same endpoint, selected by the `sku` parameter shown in each section below.
+- If it has a removable **microSD** slot, use **microSD recovery**.
+- If it has no card slot, use **DFU recovery** over USB.
 
----
+The microSD slot is a small spring-loaded slot on the right side of the case. The device only boots from a card if it has the slot - if you don't see one, use DFU recovery.
 
-## JetKVM: DFU recovery
-
-The original JetKVM is recovered over USB using DFU (Device Firmware Update) mode and Rockchip's `upgrade_tool`.
-
-### 1. Download the firmware
-
-Download the latest image from:
-
-```
-https://api.jetkvm.com/releases/system_recovery/latest?sku=jetkvm-v2
-```
-
-### 2. Enter DFU mode
-
-1. Unplug the USB cable from the device.
-2. Locate the small hole on the right side of the device.
-3. Insert a needle into the hole, press and hold the button inside, then reconnect the USB cable.
-4. Hold for three seconds, then release. The device is now in DFU mode.
-
-### 3. Flash the firmware
-
-Pick the section for your operating system.
-
-#### Linux
-
-1. Clone the `rv1106-system` repository:
-
-```sh
-git clone https://github.com/jetkvm/rv1106-system.git
-```
-
-2. Flash the firmware:
-
-```sh
-pushd tools/linux/Linux_Upgrade_Tool
-sudo ./upgrade_tool uf /path/to/your/firmware.img
-popd
-```
-
-#### macOS
-
-1. Download the [upgrade_tool](https://github.com/jetkvm/rv1106-system/releases/download/v0.2.5/upgrade_tool_v2.44_for_mac.zip) for macOS.
-
-2. Flash the firmware:
-
-```sh
-pushd upgrade_tool_v2.44_for_mac
-sudo ./upgrade_tool uf /path/to/your/firmware.img
-popd
-```
-
-#### Windows
-
-**Install drivers**
-
-1. Download [Driver Assistant](https://github.com/jetkvm/rv1106-system/releases/download/v0.2.5/DriverAssitant_v5.14.zip).
-2. Open Driver Assistant and install the drivers. The board does not need to be connected for this step.
-
-![Driver Assistant](/content/files/dfu-driver-assistant.png)
-
-**Flash the firmware**
-
-1. Download and extract the [SocToolKit](https://github.com/jetkvm/rv1106-system/releases/download/v0.2.5/SocToolKit_v2.5_20250701_01_win.zip) for Windows.
-2. Open `SocToolKit.exe` and select `RV1106`.
-
-![SocToolKit](/content/files/dfu-soctoolkit-1.png)
-
-3. Put the device in DFU mode and connect it to your computer.
-4. Open the `Download` tab, select the `USB` radio, and confirm the dropdown reads `Maskroom rockchip`.
-5. Click `Firmware...` and choose the firmware file you downloaded.
-6. Click `Upgrade` to flash.
-
-![SocToolKit Complete](/content/files/dfu-soctoolkit-2.png)
-
----
-
-## JetKVM SDMMC: microSD recovery
-
-JetKVM SDMMC boots from a microSD card. To recover the device, write a fresh recovery image to a card and boot from it.
-
-You will need:
-
-- A microSD card (8 GB or larger; UHS-I / Class 10 recommended)
-- An SD card image writer — [balenaEtcher](https://etcher.balena.io/), [Raspberry Pi Imager](https://www.raspberrypi.com/software/), or `dd` all work
-
-### 1. Download the recovery image
-
-Download `update_sd.img.zip` from:
-
-```
-https://api.jetkvm.com/releases/system_recovery/latest?sku=jetkvm-v2-sdmmc
-```
-
-The archive contains a raw `dd`-format image. Most GUI writers can flash it directly without extracting.
-
-### 2. Write the image to the microSD card
-
-Flash `update_sd.img.zip` to the microSD card with your image writer.
-
-> Writing the image will erase everything on the card. Confirm you've selected the correct device before continuing.
-
-### 3. Boot from the microSD card
-
-1. Disconnect power from JetKVM SDMMC.
-2. Insert the prepared microSD card into the device.
-3. Reconnect power.
-
-The device boots from the new image. Recovery is complete when the front display shows the device's IP address as normal.
+<div className="not-prose mt-4 grid gap-3 sm:grid-cols-2 sm:auto-rows-fr">
+  <a href="/docs/advanced-usage/factory-reset-microsd" className="no-underline! block h-full">
+    <GridCard cardClassName="h-full hover:bg-blue-100/50 bg-blue-50/50 hover:!outline-2 hover:!outline-blue-700 transition-all duration-150">
+      <div className="flex h-full flex-col gap-0.5 px-4 py-3">
+        <h4 className="text-sm font-semibold text-slate-900">microSD recovery</h4>
+        <p className="text-xs text-slate-600">
+          JetKVM models with a microSD slot.
+        </p>
+      </div>
+    </GridCard>
+  </a>
+  <a href="/docs/advanced-usage/factory-reset-dfu" className="no-underline! block h-full">
+    <GridCard cardClassName="h-full hover:bg-blue-100/50 bg-blue-50/50 hover:!outline-2 hover:!outline-blue-700 transition-all duration-150">
+      <div className="flex h-full flex-col gap-0.5 px-4 py-3">
+        <h4 className="text-sm font-semibold text-slate-900">DFU recovery</h4>
+        <p className="text-xs text-slate-600">
+          JetKVM models without a card slot. Reflash over USB.
+        </p>
+      </div>
+    </GridCard>
+  </a>
+</div>

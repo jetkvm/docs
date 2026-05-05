@@ -1,0 +1,80 @@
+---
+title: "DFU recovery"
+description: "Reflash a JetKVM that has no microSD card slot using DFU mode and Rockchip's upgrade_tool."
+order: 1
+parent: factory-reset
+---
+
+Use this procedure for the original JetKVM, which has no microSD card slot. Recovery happens over USB using DFU (Device Firmware Update) mode and Rockchip's `upgrade_tool`.
+
+If your device has a microSD card slot, follow the [microSD recovery](/docs/advanced-usage/factory-reset-microsd) guide instead.
+
+## 1. Download the firmware
+
+Download the latest image from:
+
+```
+https://api.jetkvm.com/releases/system_recovery/latest?sku=jetkvm-v2
+```
+
+## 2. Enter DFU mode
+
+1. Unplug the USB cable from the device.
+2. Locate the small hole on the right side of the device.
+3. Insert a needle into the hole, press and hold the button inside, then reconnect the USB cable.
+4. Hold for three seconds, then release. The device is now in DFU mode.
+
+## 3. Flash the firmware
+
+Pick the section for your operating system.
+
+### Linux
+
+1. Clone the `rv1106-system` repository:
+
+```sh
+git clone https://github.com/jetkvm/rv1106-system.git
+```
+
+2. Flash the firmware:
+
+```sh
+pushd tools/linux/Linux_Upgrade_Tool
+sudo ./upgrade_tool uf /path/to/your/firmware.img
+popd
+```
+
+### macOS
+
+1. Download the [upgrade_tool](https://github.com/jetkvm/rv1106-system/releases/download/v0.2.5/upgrade_tool_v2.44_for_mac.zip) for macOS.
+
+2. Flash the firmware:
+
+```sh
+pushd upgrade_tool_v2.44_for_mac
+sudo ./upgrade_tool uf /path/to/your/firmware.img
+popd
+```
+
+### Windows
+
+**Install drivers**
+
+1. Download [Driver Assistant](https://github.com/jetkvm/rv1106-system/releases/download/v0.2.5/DriverAssitant_v5.14.zip).
+2. Open Driver Assistant and install the drivers. The board does not need to be connected for this step.
+
+![Driver Assistant](/content/files/dfu-driver-assistant.png)
+
+**Flash the firmware**
+
+1. Download and extract the [SocToolKit](https://github.com/jetkvm/rv1106-system/releases/download/v0.2.5/SocToolKit_v2.5_20250701_01_win.zip) for Windows.
+2. Open `SocToolKit.exe` and select `RV1106`.
+
+![SocToolKit](/content/files/dfu-soctoolkit-1.png)
+
+3. Put the device in DFU mode and connect it to your computer.
+4. Open the `Download` tab, select the `USB` radio, and confirm the dropdown reads `Maskroom rockchip`.
+5. Click `Firmware...` and choose the firmware file you downloaded.
+6. Click `Upgrade` to flash.
+
+![SocToolKit Complete](/content/files/dfu-soctoolkit-2.png)
