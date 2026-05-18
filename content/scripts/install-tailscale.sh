@@ -74,6 +74,7 @@ main() {
 	export TAILSCALE_VERSION="${REQUESTED_VERSION:-$TAILSCALE_STABLE}"
 	case "$TAILSCALE_VERSION" in
 	1.98.*)
+		# Temporarily blocked due to https://github.com/jetkvm/kvm/issues/1461.
 		if [ -n "$REQUESTED_VERSION" ]; then
 			echo "ERROR: Tailscale $TAILSCALE_VERSION is temporarily blocked on JetKVM."
 			echo "       Use Tailscale $TAILSCALE_FALLBACK_VERSION or another known-good version."
