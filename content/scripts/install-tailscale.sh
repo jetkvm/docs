@@ -8,8 +8,6 @@ set -eu
 main() {
 
 	TAILSCALE_STABLE="$(echo $(curl -fsSL "https://pkgs.tailscale.com/stable/?mode=json&os=linux") | sed -ne 's/.*"TarballsVersion":[ ]*"\([^"]*\)".*/\1/p')"
-	TAILSCALE_FALLBACK_VERSION="1.96.4"
-	TAILSCALE_BLOCKED_ISSUE="https://github.com/jetkvm/kvm/issues/1461"
 
 	REQUESTED_VERSION=""
 	JETKVM_IP=""
@@ -73,27 +71,12 @@ main() {
 	fi
 
 	export TAILSCALE_VERSION="${REQUESTED_VERSION:-$TAILSCALE_STABLE}"
-	case "$TAILSCALE_VERSION" in
-	1.98.*)
-		if [ -n "$REQUESTED_VERSION" ]; then
-			echo "ERROR: Tailscale $TAILSCALE_VERSION is temporarily blocked on JetKVM."
-			echo "       See $TAILSCALE_BLOCKED_ISSUE for details."
-			echo "       Use Tailscale $TAILSCALE_FALLBACK_VERSION or another known-good version."
-			exit 1
-		fi
-
-		echo "WARNING: Tailscale $TAILSCALE_VERSION is temporarily blocked on JetKVM."
-		echo "         See $TAILSCALE_BLOCKED_ISSUE for details."
-		echo "         Falling back to Tailscale $TAILSCALE_FALLBACK_VERSION."
-		export TAILSCALE_VERSION="$TAILSCALE_FALLBACK_VERSION"
-		;;
-	esac
 
 	# Confirmation prompt (unless auto-yes is enabled)
 	if [ "$AUTO_YES" = false ]; then
-		echo "───────────────────────────────────────────────────────────"
+		echo "──────────────────────────────────────────────────────────"
 		echo "           JetKVM Tailscale Installation"
-		echo "───────────────────────────────────────────────────────────"
+		echo "──────────────────────────────────────────────────────────"
 		echo ""
 		echo "  JetKVM IP:            $JETKVM_IP"
 		echo "  Tailscale Version:    $TAILSCALE_VERSION"
