@@ -52,7 +52,7 @@ Tailscale is not pre-installed on the device. However, Tailscale has added out-o
 2. **On your local computer** (not on the JetKVM device), run the following command and follow the instructions:
 
 ```bash
-curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip>
+curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -i <path_to_ssh_key>
 ```
 
 ### Additional Tailscale Arguments
@@ -60,11 +60,11 @@ curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip>
 If you use a self-hosted Tailscale coordination server such as [Headscale](https://github.com/juanfont/headscale), you can pass additional arguments to the `tailscale up` command by appending them after `--` following the JetKVM IP address. Any arguments after the second `--` are forwarded directly to [`tailscale up`](https://tailscale.com/docs/reference/tailscale-cli/up).
 
 ```bash
-curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -- --login-server=https://headscale.example.com
+curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -i <path_to_ssh_key> -- --login-server=https://headscale.example.com
 ```
 
 You can also combine multiple `tailscale up` flags:
 
 ```bash
-curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -- --login-server=https://headscale.example.com --advertise-tags=tag:kvm
+curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -i <path_to_ssh_key> -- --login-server=https://headscale.example.com --advertise-tags=tag:kvm
 ```
