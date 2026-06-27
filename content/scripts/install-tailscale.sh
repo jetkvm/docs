@@ -14,12 +14,17 @@ main() {
 	AUTO_YES=false
 	CLEAN_INSTALL=false
 	TAILSCALE_UP_ARGS=""
+	SSH_KEY="$HOME/.ssh/id_rsa"
 
 	# Parse command line arguments
 	while [ $# -gt 0 ]; do
 		case $1 in
 		-v | --version)
 			REQUESTED_VERSION="$2"
+			shift 2
+			;;
+		-i | --identity)
+			SSH_KEY="$2"
 			shift 2
 			;;
 		-y | --yes)
@@ -45,10 +50,11 @@ main() {
 	if [ -z "$JETKVM_IP" ]; then
 		echo "ERROR: JetKVM IP address is required"
 		echo ""
-		echo "Usage: $0 [-v|--version <TAILSCALE_VERSION>] [-y|--yes] [-c|--clean] <JETKVM_IP> [-- <tailscale_up_args>...]"
+		echo "Usage: $0 [-v|--version <TAILSCALE_VERSION>] [-i|--identity <SSH_KEY>] [-y|--yes] [-c|--clean] <JETKVM_IP> [-- <tailscale_up_args>...]"
 		echo ""
 		echo "Options:"
 		echo "  -v, --version  Specify Tailscale version (defaults to current stable release)"
+		echo "  -i, --identity Path to the SSH private key for the JetKVM (defaults to ~/.ssh/id_rsa)"
 		echo "  -y, --yes      Automatically answer yes to confirmation prompt"
 		echo "  -c, --clean    Delete any existing tailscale data (will cause a new machine to be created)"
 		echo ""
@@ -71,6 +77,14 @@ main() {
 	fi
 
 	export TAILSCALE_VERSION="${REQUESTED_VERSION:-$TAILSCALE_STABLE}"
+
+	if [ ! -f "$SSH_KEY" ]; then
+		echo "ERROR: SSH key not found at: $SSH_KEY"
+		echo "       Provide a valid key path with -i/--identity, or place your key at ~/.ssh/id_rsa"
+		exit 1
+	fi
+
+	SSH_OPTS="-i $SSH_KEY -o IdentitiesOnly=yes"
 
 	# Confirmation prompt (unless auto-yes is enabled)
 	if [ "$AUTO_YES" = false ]; then
@@ -128,7 +142,7 @@ main() {
 	echo "       Checking SSH access (Developer Mode)..."
 
 	# First, test SSH connectivity without BatchMode to get proper error messages
-	SSH_TEST_OUTPUT=$(ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+	SSH_TEST_OUTPUT=$(ssh $SSH_OPTS -o ConnectTimeout=5 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
 		-o PreferredAuthentications=publickey -o PubkeyAuthentication=yes -o PasswordAuthentication=no \
 		root@"$JETKVM_IP" 'echo "SSH OK"' 2>&1) || SSH_EXIT_CODE=$?
 
@@ -181,10 +195,10 @@ main() {
 	echo "       Package verification successful"
 
 	echo "[5/7] Transferring Tailscale package to JetKVM..."
-	ssh root@"${JETKVM_IP}" "cat > /userdata/tailscale.tgz" <"$TMP_FILE"
+	ssh $SSH_OPTS root@"${JETKVM_IP}" "cat > /userdata/tailscale.tgz" <"$TMP_FILE"
 
 	echo "[6/7] Installing and configuring Tailscale on JetKVM..."
-	ssh -o ServerAliveInterval=1 -o ServerAliveCountMax=1 \
+	ssh $SSH_OPTS -o ServerAliveInterval=1 -o ServerAliveCountMax=1 \
 		root@"$JETKVM_IP" \
 		"export TAILSCALE_VERSION=$TAILSCALE_VERSION CLEAN_INSTALL=$CLEAN_INSTALL; ash -s" 2>/dev/null <<'EOF' || true
   set -e
@@ -223,7 +237,7 @@ EOF
 	i=1
 	while [ "$i" -le 120 ]; do
 		echo "       Checking device status... ($i/120s)"
-		if ssh -q -o ConnectTimeout=2 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+		if ssh $SSH_OPTS -q -o ConnectTimeout=2 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
 			root@"$JETKVM_IP" 'tailscale version' >/dev/null 2>&1; then
 			echo "       JetKVM is back online with Tailscale installed!"
 			break
@@ -240,7 +254,7 @@ EOF
 	done
 
 	echo "[7/7] Starting Tailscale service..."
-	ssh root@"$JETKVM_IP" "tailscale up $TAILSCALE_UP_ARGS"
+	ssh $SSH_OPTS root@"$JETKVM_IP" "tailscale up $TAILSCALE_UP_ARGS"
 	echo ""
 	echo "SUCCESS: Tailscale installation completed!"
 	echo "         Your JetKVM device is now ready to connect to your Tailscale network."
