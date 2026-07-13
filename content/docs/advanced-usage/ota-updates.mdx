@@ -18,20 +18,38 @@ If you prefer, you can disable automatic updates and manually check for updates:
 2. Click the Check for Update button to see if any new updates are available.
 3. If an update is available, you can choose to install it immediately.
 
-### Manual Upgrade
+### Manual app upgrade
 
-If OTA is not possible, you can use the following commands to manually upgrade your JetKVM device. You can either run them over SSH or via the `Web Terminal` in the JetKVM web UI.
+If the normal OTA update is not possible, you can manually install the latest stable JetKVM app. Run the following command over SSH or in the **Web Terminal** in the JetKVM web UI.
 
-Please be advised that manual upgrades should only be performed if you are comfortable with the command line, understanding the risks involved, and OTA is not possible.
+The command asks the release API for the newest app compatible with the device's hardware SKU, then verifies the downloaded binary against the returned SHA-256 checksum before staging the update.
 
-For example, to upgrade to version 0.4.6, you can run the following command:
+**Warning:** A manual upgrade bypasses the staged rollout described below. Use it only when the normal update process is unavailable and you are comfortable using the command line.
 
 ```bash
-export JETKVM_UPDATE_TMPFILE=$(mktemp) && \
-wget -c http://update.jetkvm.com/app/0.4.6/jetkvm_app -O $JETKVM_UPDATE_TMPFILE && \
-sha256sum $JETKVM_UPDATE_TMPFILE | grep 05c6930cc1202196515f3aef06b94add7207e13d0b5e09da05dc5302ed5a0650 && \
-chmod +x $JETKVM_UPDATE_TMPFILE && mv $JETKVM_UPDATE_TMPFILE /userdata/jetkvm/jetkvm_app.update && reboot
+JETKVM_SKU="$(cat /etc/jetkvm-sku 2>/dev/null || printf jetkvm-v2)" && \
+set -- $(wget -qO - "https://api.jetkvm.com/releases?deviceId=manual-update&sku=$JETKVM_SKU&appVersion=%3E%3D0.0.0" | sed -n 's/.*"appUrl":"\([^"]*\)".*"appHash":"\([^"]*\)".*/\1 \2/p') && \
+test "$#" -eq 2 && \
+TMPFILE="$(mktemp)" && \
+wget "$1" -O "$TMPFILE" && \
+printf '%s  %s\n' "$2" "$TMPFILE" | sha256sum -c - && \
+chmod +x "$TMPFILE" && mv "$TMPFILE" /userdata/jetkvm/jetkvm_app.update && \
+reboot
 ```
+
+Each step runs only if the previous one succeeds. After the download is installed as `jetkvm_app.update`, the device reboots and completes the update.
+
+#### Installing a specific version
+
+Do not construct app download URLs manually. Ask the release API for the version and SKU you need:
+
+```text
+https://api.jetkvm.com/releases?deviceId=manual-update&sku=<sku>&appVersion=<version>
+```
+
+The response provides the compatible `appUrl`, `appHash`, and `appSigUrl`. An exact version such as `0.5.8` or a semantic version range such as `^0.5.0` can be used, and a version-specific request bypasses the staged rollout.
+
+Get `<sku>` by running `cat /etc/jetkvm-sku`. It is `jetkvm-v2` on the original model and `jetkvm-v2-sdmmc` on models with a microSD card slot. Older devices without this file use `jetkvm-v2`.
 
 ---
 
