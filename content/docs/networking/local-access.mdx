@@ -37,6 +37,11 @@ Updates use HTTPS (tcp/443) towards the following FQDNs:
 - api.jetkvm.com
 - app.jetkvm.com
 
+System update packages are signed. To verify those signatures, the device fetches the release public key over HTTPS (tcp/443), connecting to these keyservers:
+
+- keys.openpgp.org
+- keyserver.ubuntu.com
+
 ### Time Synchronization
 
 Users have the option to select NTP (udp/123) and/or HTTP (tcp/80) in the Network Settings, for time synchronization to happen towards the following FQDNs:
