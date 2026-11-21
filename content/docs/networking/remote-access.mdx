@@ -71,26 +71,57 @@ curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -- --l
 
 ### Updating Tailscale
 
-To update an existing Tailscale installation (for example to pick up a security fix), run the update script from your local computer. It keeps your device's Tailscale login and settings, and reboots the JetKVM.
+Tailscale is not updated automatically. To pick up a new release (for example a security fix), use the update script on a JetKVM that already has Tailscale installed. Your device keeps its Tailscale login, node identity and settings; it is not re-authenticated and `tailscale up` is not run again. The JetKVM reboots as part of the update.
+
+1. Make sure your [SSH key is added to JetKVM](https://jetkvm.com/docs/advanced-usage/developing#developer-mode).
+2. **On your local computer** (not on the JetKVM device), run:
 
 ```bash
 curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- <jetkvm_ip>
 ```
 
-By default it installs the latest stable release. Useful options:
+The script checks that Tailscale is installed on the device, shows the installed and target versions, asks for confirmation, then downloads and verifies the package, installs it, reboots the device and confirms the new version. If Tailscale is not installed, it stops and points you to the install command above.
+
+By default the latest stable release is installed. Downgrades and reinstalls of the same version are refused unless you pass `--force`.
+
+#### Options
+
+| Option | Description |
+| --- | --- |
+| `-v`, `--version <VER>` | Install a specific version, e.g. `1.88.1` (default: latest stable) |
+| `-y`, `--yes` | Skip the confirmation prompt |
+| `-f`, `--force` | Allow reinstalling the same version or downgrading |
+| `-n`, `--check` | Only compare the installed version with the latest stable release; change nothing |
+| `-b`, `--block <VER>` | Add a version to the device's blocklist (repeatable) |
+| `-u`, `--unblock <VER>` | Remove a version from the device's blocklist (repeatable) |
+| `-l`, `--list-blocked` | Show the blocklist and exit |
+
+#### Examples
 
 ```bash
-# Only check the installed version against the latest stable release
+# Check whether an update is available
 curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- -n <jetkvm_ip>
 
-# Install a specific version
-curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- -v 1.88.1 <jetkvm_ip>
+# Install a specific version without prompting
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- -v 1.88.1 -y <jetkvm_ip>
+
+# Roll back to an older version
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- -v 1.86.5 --force <jetkvm_ip>
 ```
 
-If a Tailscale release is known to be broken, you can block it. Blocked versions are stored on the JetKVM and will never be installed, even if requested with `--version`:
+#### Blocking broken versions
+
+If a Tailscale release is known to be broken, block it so it can't be installed by mistake. Blocked versions are refused even when requested with `--version`, and if the latest stable release is blocked the script stops instead of installing it; choose an older version with `--version` in that case.
+
+The blocklist is stored on the JetKVM in `/userdata/tailscale-blocked-versions` (one version per line), so it applies no matter which computer you run the script from.
 
 ```bash
+# Block a version
 curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- --block 1.90.0 <jetkvm_ip>
+
+# See what is blocked
 curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- --list-blocked <jetkvm_ip>
+
+# Allow a version again
 curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- --unblock 1.90.0 <jetkvm_ip>
 ```
