@@ -68,3 +68,29 @@ You can also combine multiple `tailscale up` flags:
 ```bash
 curl -fsSL https://jetkvm.com/install-tailscale.sh | sh -s -- <jetkvm_ip> -- --login-server=https://headscale.example.com --advertise-tags=tag:kvm
 ```
+
+### Updating Tailscale
+
+To update an existing Tailscale installation (for example to pick up a security fix), run the update script from your local computer. It keeps your device's Tailscale login and settings, and reboots the JetKVM.
+
+```bash
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- <jetkvm_ip>
+```
+
+By default it installs the latest stable release. Useful options:
+
+```bash
+# Only check the installed version against the latest stable release
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- -n <jetkvm_ip>
+
+# Install a specific version
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- -v 1.88.1 <jetkvm_ip>
+```
+
+If a Tailscale release is known to be broken, you can block it. Blocked versions are stored on the JetKVM and will never be installed, even if requested with `--version`:
+
+```bash
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- --block 1.90.0 <jetkvm_ip>
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- --list-blocked <jetkvm_ip>
+curl -fsSL https://jetkvm.com/update-tailscale.sh | sh -s -- --unblock 1.90.0 <jetkvm_ip>
+```
